@@ -52,3 +52,7 @@ Execute `app.py`
 ```
 python3 app.py
 ```
+
+## Information
+- Script look for new posts every 60 seconds
+- There is a delay of 12 seconds for each webhook requests due to IFTTT internal 10 seconds cooldown + 2 seconds for buffer.

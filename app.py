@@ -80,10 +80,10 @@ while True:
             send_ifttt_webhook(clean_content)
             print(clean_content)
             logging.info(clean_content)
+            time.sleep(12)
         else:
             print('Skipping mentions status - {}'.format(i.get('content')))
         #write the latest status id to txt file
         write_status_id(i.get('id'))
-        #sleep few seconds as IFTTT takes 10sec to trigger
-        time.sleep(12)
+        #sleep few seconds as IFTTT takes 10sec to trigger 
     time.sleep(60)
