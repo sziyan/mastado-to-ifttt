@@ -1,4 +1,4 @@
-# Simple script to read Mastado public and private statuses and trigger IFTTT webhook
+# Simple script to read Mastado public and private statuses and trigger IFTTT webhook (include image)
 
 ## Configuration
 1. Create `config.py` with the following:
