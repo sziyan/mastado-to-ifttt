@@ -45,9 +45,12 @@ def write_status_id(status_id):
         f.write(status_id)
     f.close()
 
-def send_ifttt_webhook(content):
+def send_ifttt_webhook(content, image_url=None):
     url = 'https://maker.ifttt.com/trigger/{}/with/key/{}'.format(ifttt_event,ifttt_webhook_key)
-    data = {'value1': content}
+    if image_url:
+        data = {'value1': content, 'value2': image_url}
+    else:
+        data = {'value1': content}
     r = requests.post(url, data=data)
     return
 
@@ -59,12 +62,13 @@ def check_if_mention(mentions):
         #status have mentions
         return True
 
-# statuses = get_status(get_id())
-# for i in (statuses):
-#     print(check_if_mention(i.get('mentions')))
-
 logging.info('Starting bot')
 print('Starting bot')
+
+# statuses = get_status(get_id())[0]
+# media_attachments = statuses.get('media_attachments')[0].get('url')
+# print(media_attachments)
+
 
 while True:
     #get latest statuses
@@ -77,12 +81,18 @@ while True:
             #get the content of the status as there are no mentions
             content = i.get('content')
             clean_content = clean_html(content)
-            send_ifttt_webhook(clean_content)
+            media_attachments = i.get('media_attachments')
+            if media_attachments:
+                image_url = media_attachments[0].get('url')
+                send_ifttt_webhook(clean_content, image_url=image_url)
+            else:
+                send_ifttt_webhook(clean_content)
             print(clean_content)
             logging.info(clean_content)
             time.sleep(12)
         else:
             print('Skipping mentions status - {}'.format(i.get('content')))
+            logging.inf('Skipping mentions status - {}'.format(i.get('content')))
         #write the latest status id to txt file
         write_status_id(i.get('id'))
         #sleep few seconds as IFTTT takes 10sec to trigger 
