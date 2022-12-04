@@ -21,7 +21,7 @@ def get_id():
 def get_status(account_id):
     latest_id = check_latest_status_id()
     url = '{}/api/v1/accounts/{}/statuses'.format(instance_url,account_id)
-    params = {'exclude_reblogs': True, 'limit': 5, 'since_id': '{}'.format(latest_id)}
+    params = {'exclude_reblogs': True, 'since_id': '{}'.format(latest_id)}
     #params = {'exclude_reblogs': True, 'limit': 5}
     r = requests.get(url, headers=headers, params=params)
     data = r.json()
@@ -65,10 +65,6 @@ def check_if_mention(mentions):
 logging.info('Starting bot')
 print('Starting bot')
 
-# statuses = get_status(get_id())[0]
-# media_attachments = statuses.get('media_attachments')[0].get('url')
-# print(media_attachments)
-
 
 while True:
     #get latest statuses
@@ -92,8 +88,9 @@ while True:
             time.sleep(12)
         else:
             print('Skipping mentions status - {}'.format(i.get('content')))
-            logging.inf('Skipping mentions status - {}'.format(i.get('content')))
+            logging.info('Skipping mentions status - {}'.format(i.get('content')))
         #write the latest status id to txt file
         write_status_id(i.get('id'))
         #sleep few seconds as IFTTT takes 10sec to trigger 
     time.sleep(60)
+

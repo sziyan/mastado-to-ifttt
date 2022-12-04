@@ -2,3 +2,6 @@ config.py
 __pycache__/
 latest_status.txt
 logs.log
+test.py
+pixelfed_latest_status.txt
+pixelfed.log
