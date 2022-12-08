@@ -40,8 +40,8 @@ def check_latest_status_id():
 def get_status(account_id):
     latest_id = check_latest_status_id()
     url = '{}/api/v1/accounts/{}/statuses'.format(instance_url,account_id)
-    params = {'exclude_reblogs': True, 'since_id': '{}'.format(latest_id)}
-    #params = {'exclude_reblogs': True, 'limit': 5}
+    params = {'min_id': '504902185668143713', 'limit': 5}
+    # params = {'exclude_reblogs': True, 'limit': 1}
     r = requests.get(url, headers=headers, params=params)
     data = r.json()
     return data
@@ -60,25 +60,31 @@ def send_ifttt_webhook(content, image_url=None):
     r = requests.post(url, data=data)
     return
 
-logging.info('Starting bot')
-print('Starting bot')
+# testing
+statuses = get_status(get_id())
+for i in reversed(statuses):
+    print(i.get('id'))
+    print(i.get('content'))
 
-while True:
-    #get latest statuses
-    statuses = get_status(get_id())
-    #loop through each status
-    for i in reversed(statuses):
-        content = i.get('content')
-        clean_content = clean_html(content)
-        #only get first media since IFTTT DayOne only support 1 image URL
-        media_attachments = i.get('media_attachments')[0]
-        image_url = media_attachments.get('url')
-        send_ifttt_webhook(clean_content, image_url=image_url)
-        print(clean_content)
-        logging.info(clean_content)
-        time.sleep(12)
-        #write the latest status id to txt file
-        write_status_id(i.get('id'))
-        #sleep few seconds as IFTTT takes 10sec to trigger 
-    time.sleep(60)
+# logging.info('Starting bot')
+# print('Starting bot')
+
+# while True:
+#     #get latest statuses
+#     statuses = get_status(get_id())
+#     #loop through each status
+#     for i in reversed(statuses):
+#         content = i.get('content')
+#         clean_content = clean_html(content)
+#         #only get first media since IFTTT DayOne only support 1 image URL
+#         media_attachments = i.get('media_attachments')[0]
+#         image_url = media_attachments.get('url')
+#         send_ifttt_webhook(clean_content, image_url=image_url)
+#         print(clean_content)
+#         logging.info(clean_content)
+#         time.sleep(12)
+#         #write the latest status id to txt file
+#         write_status_id(i.get('id'))
+#         #sleep few seconds as IFTTT takes 10sec to trigger 
+#     time.sleep(60)
 

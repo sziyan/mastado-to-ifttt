@@ -10,6 +10,8 @@ instance_url = Config.instance_url
 access_token = Config.access_token
 ifttt_webhook_key = Config.ifttt_webhook_key
 ifttt_event = Config.ifttt_event
+pushover_app_token = Config.pushover_app_token
+pushover_user_token = Config.pushover_user_token
 headers = {'Authorization': 'Bearer {}'.format(access_token)}
 
 def get_id():
@@ -54,6 +56,21 @@ def send_ifttt_webhook(content, image_url=None):
     r = requests.post(url, data=data)
     return
 
+def send_pushover(title, message, device=None):
+    if device is None:
+        device = 'ziyaniPhone14'
+    data = {'title': title, 'message': message, 'device': device,'token':pushover_app_token, 'user': pushover_user_token }
+    url = 'https://api.pushover.net/1/messages.json'
+    r = requests.post(url, data=data)
+    return r
+
+def send_http_request(url, request_type, header=None, data=None):
+    if request_type == 'POST':
+        r = requests.post(url, data=data, headers=headers)
+    else:
+        r = requests.get(url, headers=headers, data=data)
+    return r
+
 def check_if_mention(mentions):
     if not bool(mentions):
         #status no mentions
@@ -64,33 +81,45 @@ def check_if_mention(mentions):
 
 logging.info('Starting bot')
 print('Starting bot')
+send_pushover('Mastodo to DayOne', 'Script started successfully!')
 
 
 while True:
-    #get latest statuses
-    statuses = get_status(get_id())
+    try:
+        #get latest statuses
+        statuses = get_status(get_id())
 
-    #loop through each status
-    for i in reversed(statuses):
-        #check if status have mentions
-        if check_if_mention(i.get('mentions')) is False:
-            #get the content of the status as there are no mentions
-            content = i.get('content')
-            clean_content = clean_html(content)
-            media_attachments = i.get('media_attachments')
-            if media_attachments:
-                image_url = media_attachments[0].get('url')
-                send_ifttt_webhook(clean_content, image_url=image_url)
+        #loop through each status
+        for i in reversed(statuses):
+            #check if status have mentions
+            if check_if_mention(i.get('mentions')) is False:
+                #get the content of the status as there are no mentions
+                content = i.get('content')
+                clean_content = clean_html(content)
+                media_attachments = i.get('media_attachments')
+                if media_attachments:
+                    image_url = media_attachments[0].get('url')
+                    send_ifttt_webhook(clean_content, image_url=image_url)
+                else:
+                    send_ifttt_webhook(clean_content)
+                print(clean_content)
+                logging.info(clean_content)
+                time.sleep(12)
             else:
-                send_ifttt_webhook(clean_content)
-            print(clean_content)
-            logging.info(clean_content)
-            time.sleep(12)
-        else:
-            print('Skipping mentions status - {}'.format(i.get('content')))
-            logging.info('Skipping mentions status - {}'.format(i.get('content')))
-        #write the latest status id to txt file
-        write_status_id(i.get('id'))
-        #sleep few seconds as IFTTT takes 10sec to trigger 
-    time.sleep(60)
-
+                print('Skipping mentions status - {}'.format(i.get('content')))
+                logging.info('Skipping mentions status - {}'.format(i.get('content')))
+            #write the latest status id to txt file
+            write_status_id(i.get('id'))
+            #sleep few seconds as IFTTT takes 10sec to trigger 
+        time.sleep(60)
+    except requests.exceptions.SSLError:
+        logging.error('SSL exception error')
+        send_pushover('Mastodo to DayOne','Mastodo script crashed due to SSLError!')
+        time.sleep(120)
+    except KeyboardInterrupt:
+        print('Exit script due to keyboard interrupt')
+        break
+    except Exception as exception:
+        logging.error('General exception error: {}'.format(exception))
+        send_pushover('Mastodo to DayOne','Mastodo script crashed due to general exception error: {}'.format(exception))
+        time.sleep(120)
